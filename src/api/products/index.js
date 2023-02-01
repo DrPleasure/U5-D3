@@ -24,7 +24,7 @@ productsRouter.get("/", async (req, res, next) => {
       query.price = { [Op.between]: [req.query.priceMin, req.query.priceMax] }
     const products = await ProductsModel.findAll({
       where: { ...query },
-      attributes: ["name", "brand", "category", "price"],
+      attributes: ["id", "name", "brand", "category", "price", "image"],
     })
     res.send(products)
   } catch (error) {
