@@ -2,6 +2,7 @@ import express from "express"
 import createHttpError from "http-errors"
 import { Op } from "sequelize"
 import UsersModel from "./model.js"
+import ProductsModel from "../products/model.js"
 
 const usersRouter = express.Router()
 
@@ -20,7 +21,7 @@ usersRouter.get("/", async (req, res, next) => {
     if (req.query.firstName) query.firstName = { [Op.iLike]: `${req.query.firstName}%` }
     const users = await UsersModel.findAll({
       where: { ...query },
-      attributes: ["firstName", "lastName"],
+      attributes: ["firstName", "lastName", "id"],
     }) // (SELECT) pass an array for the include list
     res.send(users)
   } catch (error) {
@@ -38,6 +39,23 @@ usersRouter.get("/:userId", async (req, res, next) => {
     } else {
       next(createHttpError(404, `User with id ${req.params.userId} not found!`))
     }
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Adding 1-to-N relationship
+
+usersRouter.get("/:userId/products", async (req, res, next) => {
+  try {
+    const user = await UsersModel.findByPk(req.params.userId, {
+      include: {
+        model: ProductsModel,
+        attributes: ["name", "brand"],
+        // where: { title: { [Op.iLike]: "%react%" } },
+      },
+    })
+    res.send(user)
   } catch (error) {
     next(error)
   }

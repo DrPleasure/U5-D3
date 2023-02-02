@@ -1,5 +1,8 @@
 import { DataTypes } from "sequelize"
 import sequelize from "../../db.js"
+import UsersModel from "../users/model.js"
+import CategoriesModel from "../categories/model.js"
+import ProductsCategoriesModel from "./ProductsCategoriesModel.js"
 
 const ProductsModel = sequelize.define(
   "product",
@@ -17,10 +20,6 @@ const ProductsModel = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },  
-    category: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },  
     description: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -32,9 +31,20 @@ const ProductsModel = sequelize.define(
     price: {
       type: DataTypes.FLOAT,
       allowNull: false,
-    },
+    },  
   }
   /* {timestamps: false} TIMESTAMPS HERE ARE TRUE BY DEFAULT */
 )
+
+UsersModel.hasMany(ProductsModel, { foreignKey: { allowNull: true } })
+ProductsModel.belongsTo(UsersModel)
+
+// Many to many relationship
+ProductsModel.belongsToMany(CategoriesModel, {
+  through: ProductsCategoriesModel
+})
+CategoriesModel.belongsToMany(ProductsModel, {
+  through: ProductsCategoriesModel
+})
 
 export default ProductsModel
