@@ -5,7 +5,7 @@ import { pgConnect, syncModels } from "./db.js"
 import usersRouter from "./api/users/index.js"
 import productsRouter from "./api/products/index.js"
 import categoriesRouter from "./api/categories/index.js"
-import reviewsrouter from "./api/reviews/index.js"
+// import reviewsrouter from "./api/reviews/index.js"
 import {
   badRequestErrorHandler,
   forbiddenErrorHandler,
@@ -25,7 +25,7 @@ server.use(express.json())
 server.use("/users", usersRouter)
 server.use("/products", productsRouter)
 server.use("/categories", categoriesRouter)
-server.use("/reviews", reviewsrouter)
+// server.use("/reviews", reviewsrouter)
 
 // ******************************* ERROR HANDLERS **************************************
 server.use(badRequestErrorHandler)

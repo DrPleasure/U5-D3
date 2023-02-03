@@ -1,6 +1,6 @@
-import { DataTypes } from "sequelize"
-import sequelize from "../../db.js"
-
+import { DataTypes } from "sequelize";
+import sequelize from "../../db.js";
+import ProductsModel from "../products/model.js";
 
 const ReviewsModel = sequelize.define(
     "review",
@@ -22,10 +22,12 @@ const ReviewsModel = sequelize.define(
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
-            min: 1,
-            max: 10
-        }
-      }
-    })
+          min: 1,
+          max: 10,
+        },
+      },
+     
+    }
+);
 
-    export default ReviewsModel
+export default ReviewsModel;

@@ -5,6 +5,7 @@ import ProductsModel from "./model.js"
 import UsersModel from "../users/model.js"
 import CategoriesModel from "../categories/model.js"
 import ProductsCategoriesModel from "./ProductsCategoriesModel.js"
+import ReviewsModel from "../reviews/model.js"
 
 const productsRouter = express.Router()
 
@@ -62,12 +63,11 @@ productsRouter.get("/", async (req, res, next) => {
     if (req.query.brand) query.brand = { [Op.iLike]: `${req.query.brand}%` }
     if (req.query.priceMin && req.query.priceMax)
       query.price = { [Op.between]: [req.query.priceMin, req.query.priceMax] }
-    if (req.query.categoryId) query.categoryId = req.query.categoryId
 
     const limit = req.query.limit || 10
     const skip = req.query.skip || 0
 
-    const products = await ProductsModel.findAll({
+    let products = await ProductsModel.findAll({
       where: { ...query },
       attributes: ["id", "name", "brand", "price", "image"],
       include: [
@@ -77,11 +77,24 @@ productsRouter.get("/", async (req, res, next) => {
       limit,
       offset: skip,
     })
+
+    if (req.query.category) {
+      const category = await CategoriesModel.findOne({ where: { name: req.query.category } })
+      if (category) {
+        products = products.filter(product => {
+          return product.categories.some(prodCategory => {
+            return prodCategory.name === req.query.category
+          })
+        })
+      }
+    }
+
     res.send(products)
   } catch (error) {
     next(error)
   }
 })
+
 
 
 productsRouter.get("/:productId", async (req, res, next) => {
@@ -125,6 +138,47 @@ productsRouter.delete("/:productId", async (req, res, next) => {
     next(error)
     }
     })
+
+
+// REVIEWS
+
+productsRouter.post("/:productId/reviews/add", async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+    const { author, text, rating } = req.body;
+    const review = await ReviewsModel.create({ productId, author, text, rating });
+    res.status(201).send(review);
+  } catch (error) {
+    next(error);
+  }
+});
+
+productsRouter.get("/:productId/reviews", async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+    const reviews = await ReviewsModel.findAll({ where: { productId } });
+    res.send(reviews);
+  } catch (error) {
+    next(error);
+  }
+});
+
+productsRouter.delete("/:productId/reviews/:reviewId", async (req, res, next) => {
+  try {
+    const { reviewId } = req.params;
+    const numberOfDeletedRows = await ReviewsModel.destroy({ where: { id: reviewId } });
+    if (numberOfDeletedRows === 1) {
+      res.status(204).send();
+    } else {
+      next(createHttpError(404, `Review with id ${reviewId} not found!`));
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+
 
 // MANY TO MANY RELATIONSHIP
 
