@@ -36,6 +36,25 @@ try {
   }
 })
 
+productsRouter.delete("/:productId/:categoryId", async (req, res, next) => {
+  try {
+    const numberOfDeletedRows = await ProductsCategoriesModel.destroy({
+      where: { 
+        productId: req.params.productId,
+        categoryId: req.params.categoryId
+      }
+    })
+    if (numberOfDeletedRows === 1) {
+      res.status(204).send()
+    } else {
+      next(createHttpError(404, `Association between product with id ${req.params.productId} and category with id ${req.params.categoryId} not found!`))
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
+
 productsRouter.get("/", async (req, res, next) => {
   try {
     const query = {}
@@ -43,21 +62,27 @@ productsRouter.get("/", async (req, res, next) => {
     if (req.query.brand) query.brand = { [Op.iLike]: `${req.query.brand}%` }
     if (req.query.priceMin && req.query.priceMax)
       query.price = { [Op.between]: [req.query.priceMin, req.query.priceMax] }
+    if (req.query.categoryId) query.categoryId = req.query.categoryId
+
+    const limit = req.query.limit || 10
+    const skip = req.query.skip || 0
+
     const products = await ProductsModel.findAll({
-     
       where: { ...query },
       attributes: ["id", "name", "brand", "price", "image"],
-
       include: [
         { model: UsersModel, attributes: ["firstName", "lastName"] },  
-        { model:CategoriesModel, attributes: ["name"], through: {attributes: []} },
+        { model: CategoriesModel, attributes: ["name"], through: {attributes: []} },
       ],
+      limit,
+      offset: skip,
     })
     res.send(products)
   } catch (error) {
     next(error)
   }
 })
+
 
 productsRouter.get("/:productId", async (req, res, next) => {
   try {

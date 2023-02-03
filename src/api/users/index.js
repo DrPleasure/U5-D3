@@ -17,17 +17,23 @@ usersRouter.post("/", async (req, res, next) => {
 
 usersRouter.get("/", async (req, res, next) => {
   try {
-    const query = {}
-    if (req.query.firstName) query.firstName = { [Op.iLike]: `${req.query.firstName}%` }
-    const users = await UsersModel.findAll({
-      where: { ...query },
-      attributes: ["firstName", "lastName", "id"],
-    }) // (SELECT) pass an array for the include list
-    res.send(users)
+  const query = {}
+  if (req.query.firstName) query.firstName = { [Op.iLike]: `${req.query.firstName}%` }
+  const skip = req.query.skip ? parseInt(req.query.skip) : 0;
+  const limit = req.query.limit ? parseInt(req.query.limit) : 20;
+  
+ 
+  const users = await UsersModel.findAll({
+    where: { ...query },
+    attributes: ["firstName", "lastName", "id", "age", "country"],
+    offset: skip,
+    limit: limit,
+  }) // (SELECT) pass an array for the include list
+  res.send(users)
   } catch (error) {
-    next(error)
+  next(error)
   }
-})
+  })
 
 usersRouter.get("/:userId", async (req, res, next) => {
   try {
