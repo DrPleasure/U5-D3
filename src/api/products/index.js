@@ -71,7 +71,6 @@ productsRouter.get("/", async (req, res, next) => {
       where: { ...query },
       attributes: ["id", "name", "brand", "price", "image"],
       include: [
-        { model: UsersModel, attributes: ["firstName", "lastName"] },  
         { model: CategoriesModel, attributes: ["name"], through: {attributes: []} },
       ],
       limit,

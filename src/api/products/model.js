@@ -37,9 +37,6 @@ const ProductsModel = sequelize.define(
   /* {timestamps: false} TIMESTAMPS HERE ARE TRUE BY DEFAULT */
 )
 
-UsersModel.hasMany(ProductsModel, { foreignKey: { allowNull: true } })
-ProductsModel.belongsTo(UsersModel)
-
 // Many to many relationship
 ProductsModel.belongsToMany(CategoriesModel, {
   through: ProductsCategoriesModel
@@ -51,4 +48,8 @@ CategoriesModel.belongsToMany(ProductsModel, {
 ProductsModel.hasMany(ReviewsModel);
 ReviewsModel.belongsTo(ProductsModel, { foreignKey: "productId", allowNull: false });
 
+
+
+
 export default ProductsModel
+

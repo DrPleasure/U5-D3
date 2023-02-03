@@ -1,6 +1,7 @@
 import { DataTypes } from "sequelize"
 import sequelize from "../../db.js"
 
+
 const UsersModel = sequelize.define(
   "user",
   {
@@ -25,8 +26,19 @@ const UsersModel = sequelize.define(
       type: DataTypes.STRING(2),
       allowNull: false,
     },
+    cartId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      defaultValue: DataTypes.UUIDV4,
+    },
+    totalAmount: {
+      type: DataTypes.FLOAT(10, 2),
+      allowNull: true,
+    },
+   
   }
-  /* {timestamps: false} TIMESTAMPS HERE ARE TRUE BY DEFAULT */
 )
+
+
 
 export default UsersModel

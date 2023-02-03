@@ -1,7 +1,9 @@
 import { DataTypes } from "sequelize"
 import sequelize from "../../db.js"
 
-const CategoriesModel = sequelize.define("category", {
+const CategoriesModel = sequelize.define(
+  "category", 
+  {
   categoryId: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,

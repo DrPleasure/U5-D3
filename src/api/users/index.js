@@ -3,6 +3,8 @@ import createHttpError from "http-errors"
 import { Op } from "sequelize"
 import UsersModel from "./model.js"
 import ProductsModel from "../products/model.js"
+import ShoppingCartModel from"../cart/model.js"
+import CartModel from "../cart/model.js"
 
 const usersRouter = express.Router()
 
@@ -95,5 +97,80 @@ usersRouter.delete("/:userId", async (req, res, next) => {
     next(error)
   }
 })
+
+
+// ShoppingCart Endpoints
+
+// Add item to the cart
+usersRouter.post("/:userId/cart", async (req, res) => {
+  const userId = req.params.userId;
+  const productId = req.body.productId;
+  const quantity = req.body.quantity;
+
+  try {
+    const cart = await CartModel.create({
+      productId,
+      quantity,
+      userId,
+    });
+    const user = await UsersModel.findByPk(userId);
+    const product = await ProductsModel.findByPk(productId);
+
+    user.cartId = cart.id;
+    await user.save();
+
+    product.CartModelId = cart.id;
+    await product.save();
+
+    return res.json({
+      cart,
+      product,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      error: error.message,
+    });
+  }
+});
+
+
+  
+  // Update the quantity of items in the cart
+  usersRouter.put("/:userId/cart/:productId", async (req, res, next) => {
+  try {
+  const item = await ShoppingCartModel.findByPk(req.params.productId)
+  if (!item) {
+  next(createHttpError(404, `Item with id ${req.params.productId} not found!`))
+  } else {
+  const { quantity } = req.body
+  const [numberOfUpdatedRows, updatedRecords] = await ShoppingCartModel.update({ quantity }, {
+  where: { id: req.params.productId },
+  returning: true,
+  })
+  if (numberOfUpdatedRows === 1) {
+  res.send(updatedRecords[0])
+  } else {
+  next(createHttpError(404, `Item with id ${req.params.productId} not found!`))
+  }
+  }
+  } catch (error) {
+  next(error)
+  }
+  })
+  
+  // Retrieve the cart information
+  usersRouter.get("/:userId/cart", async (req, res, next) => {
+  try {
+  const items = await ShoppingCartModel.findAll({
+  where: { userId: req.params.userId },
+  include: [
+  { model: ProductsModel, attributes: ["name", "brand", "price"] },
+  ],
+  })
+  res.send(items)
+  } catch (error) {
+  next(error)
+  }
+  })
 
 export default usersRouter
